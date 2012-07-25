@@ -1,0 +1,34 @@
+NAME
+    mnimograph.pl
+
+AUTHOR
+    Dimitrios - Georgios Kontopoulos
+
+DESCRIPTION
+    mnimograph.pl is a tool for memory usage graphing.
+
+    It will collect memory usage values every 5 seconds until being stopped
+    by typing 'Q' and pressing <Enter>.
+
+    Its output is a graph of the values in .eps format.
+
+DEPENDENCIES
+    -Gnuplot ( >= 4.4 )
+
+    -Perl ( >= 5.14.2 )
+
+    -Chart::Gnuplot ( >= 0.17 )
+
+    -Term::ReadKey ( >= 2.30 )
+
+USAGE
+    mnimograph.pl output_filename
+
+LICENSE
+    This program is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation, either version 3 of the License, or (at your
+    option) any later version.
+
+    For more information, see http://www.gnu.org/licenses/.
+
