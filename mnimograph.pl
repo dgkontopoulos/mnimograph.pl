@@ -101,7 +101,7 @@ if ( $counter <= 1 )
     say "Please let the program run for a little longer next time.";
     exit;
 }
-my $chart = Chart::Gnuplot->new( output => "/tmp/$output_file" );
+my $chart = Chart::Gnuplot->new( output => "$output_file" );
 
 my $dataSet = Chart::Gnuplot::DataSet->new(
     xdata  => \@index,
