@@ -50,7 +50,7 @@ use feature qw(say);
 use Chart::Gnuplot;
 use Term::ReadKey;
 
-@ARGV == 1 or die "Usage: $0 output_filename\n";
+@ARGV == 1 or die "Usage: mnimograph.pl output_filename\n";
 my $output_file = $ARGV[0];
 
 if ( $output_file !~ /[.]eps$/ )
