@@ -62,7 +62,7 @@ open my $fh, '>', $output_file
   or die "ERROR! No permission to write to file \"$output_file\"";
 close $fh;
 
-say "This is a tool for memory usage graphing.";
+say 'This is a tool for memory usage graphing.';
 say "When you're done, type 'Q' and press Enter.\n";
 
 my ( $used_memory, @index, @values );
@@ -97,11 +97,15 @@ while (1)
 }
 if ( $counter <= 1 )
 {
-    say "ERROR! Not enough values for a graph to be produced!";
-    say "Please let the program run for a little longer next time.";
+    say 'ERROR! Not enough values for a graph to be produced!';
+    say 'Please let the program run for a little longer next time.';
     exit;
 }
-my $chart = Chart::Gnuplot->new( output => "$output_file" );
+my $chart = Chart::Gnuplot->new(
+    output => "$output_file",
+    xlabel => 'Time (sec)',
+    ylabel => 'Memory (MB)'
+);
 
 my $dataSet = Chart::Gnuplot::DataSet->new(
     xdata  => \@index,
@@ -112,4 +116,4 @@ my $dataSet = Chart::Gnuplot::DataSet->new(
 );
 $chart->plot2d($dataSet);
 
-say "Done.";
+say 'Done.';
