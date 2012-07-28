@@ -1,8 +1,8 @@
 NAME
     mnimograph.pl
 
-AUTHOR
-    Dimitrios - Georgios Kontopoulos
+SYNOPSIS
+    mnimograph.pl [ options ] outfile
 
 DESCRIPTION
     mnimograph.pl is a tool for memory usage graphing.
@@ -11,6 +11,11 @@ DESCRIPTION
     by typing 'Q' and pressing <Enter>.
 
     Its output is a graph of the values in .eps format.
+
+OPTIONS
+  -alc (ALways Complete)
+    With this option a graph will be plotted, even if mnimograph.pl is
+    stopped by a SIGINT signal.
 
 DEPENDENCIES
     -Gnuplot ( >= 4.4 )
@@ -21,8 +26,11 @@ DEPENDENCIES
 
     -Term::ReadKey ( >= 2.30 )
 
-USAGE
-    mnimograph.pl output_filename
+AUTHOR
+    Dimitrios - Georgios Kontopoulos <dgkontopoulos@member.fsf.org>
+
+WEBSITE
+    https://github.com/dgkontopoulos/mnimograph.pl/
 
 LICENSE
     This program is free software: you can redistribute it and/or modify it

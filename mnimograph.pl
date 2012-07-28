@@ -4,9 +4,9 @@
 
 mnimograph.pl
 
-=head1 AUTHOR
+=head1 SYNOPSIS
 
-Dimitrios - Georgios Kontopoulos
+mnimograph.pl [ options ] outfile
 
 =head1 DESCRIPTION
 
@@ -16,6 +16,12 @@ It will collect memory usage values every 5 seconds
 until being stopped by typing 'Q' and pressing <Enter>.
 
 Its output is a graph of the values in .eps format.
+
+=head1 OPTIONS
+
+=head2 -alc (ALways Complete)
+
+With this option a graph will be plotted, even if mnimograph.pl is stopped by a SIGINT signal.
 
 =head1 DEPENDENCIES
 
@@ -27,9 +33,14 @@ Its output is a graph of the values in .eps format.
 
 -Term::ReadKey ( >= 2.30 )
 
-=head1 USAGE
+=head1 AUTHOR
 
-mnimograph.pl output_filename
+Dimitrios - Georgios Kontopoulos
+<dgkontopoulos@member.fsf.org>
+
+=head1 WEBSITE
+
+B<https://github.com/dgkontopoulos/mnimograph.pl/>
 
 =head1 LICENSE
 
@@ -50,8 +61,29 @@ use feature qw(say);
 use Chart::Gnuplot;
 use Term::ReadKey;
 
-@ARGV == 1 or die "Usage: mnimograph.pl output_filename\n";
-my $output_file = $ARGV[0];
+( @ARGV >= 1 && @ARGV <= 2 )
+  or die "Usage: mnimograph.pl [ options ] output_filename\n";
+
+my $output_file;
+my $always_complete = 0;
+
+if ( @ARGV == 1 )
+{
+    $output_file = $ARGV[0];
+}
+else
+{
+    if ( $ARGV[0] eq '-alc' )
+    {
+        $always_complete = 1;
+    }
+    else
+    {
+        say "No such flag: $ARGV[0]";
+        exit;
+    }
+    $output_file = $ARGV[1];
+}
 
 if ( $output_file !~ /[.]eps$/ )
 {
@@ -84,6 +116,10 @@ while (1)
         }
         sleep 5;
     }
+    if ( $always_complete == 1 )
+    {
+        $SIG{'INT'} = 'signal_handling';
+    }
     my $key;
     do
     {
@@ -91,29 +127,40 @@ while (1)
     } while ( time < 5 && !( defined $key ) );
     if ( defined $key && $key =~ /Q/ )
     {
-        say "Plotting $output_file ...\n";
         last;
     }
 }
-if ( $counter <= 1 )
+plot();
+
+sub signal_handling
 {
-    say 'ERROR! Not enough values for a graph to be produced!';
-    say 'Please let the program run for a little longer next time.';
+    plot();
     exit;
 }
-my $chart = Chart::Gnuplot->new(
-    output => "$output_file",
-    xlabel => 'Time (sec)',
-    ylabel => 'Memory (MB)'
-);
 
-my $dataSet = Chart::Gnuplot::DataSet->new(
-    xdata  => \@index,
-    ydata  => \@values,
-    style  => "linespoints",
-    color  => "#FF0000",
-    plotbg => "#FFFFFF"
-);
-$chart->plot2d($dataSet);
+sub plot
+{
+    say "\nPlotting $output_file ...";
+    if ( $counter <= 1 )
+    {
+        say 'ERROR! Not enough values for a graph to be produced!';
+        say 'Please let the program run for a little longer next time.';
+        exit;
+    }
+    my $chart = Chart::Gnuplot->new(
+        output => "$output_file",
+        xlabel => 'Time (sec)',
+        ylabel => 'Memory (MB)'
+    );
 
-say 'Done.';
+    my $dataSet = Chart::Gnuplot::DataSet->new(
+        xdata  => \@index,
+        ydata  => \@values,
+        style  => "linespoints",
+        color  => "#FF0000",
+        plotbg => "#FFFFFF"
+    );
+    $chart->plot2d($dataSet);
+    say 'Done.';
+    return 0;
+}

@@ -13,8 +13,11 @@ mnimograph: mnimograph.pl
 
 install:
 	mkdir -p $(INSTALLDIR)/
+	mkdir -p $(DESTDIR)/usr/local/man/man1/
+	cp mnimograph.1.gz $(DESTDIR)/usr/local/man/man1/
 	install mnimograph.pl $(INSTALLDIR)
 	@echo "\nAll done! Launch mnimograph with 'mnimograph.pl'."
 
 uninstall:
 	rm -rf $(INSTALLDIR)/mnimograph.pl
+	rm -rf $(DESTDIR)/usr/local/man/man1/mnimograph.1.gz
