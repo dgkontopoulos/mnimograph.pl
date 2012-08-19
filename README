@@ -10,19 +10,28 @@ DESCRIPTION
     It will collect memory usage values every 5 seconds until being stopped
     by typing 'Q' and pressing <Enter>.
 
-    Its output is a graph of the values in .eps format.
+    Its output is a graph of the values in .png format.
 
 OPTIONS
   -alc (ALways Complete)
     With this option a graph will be plotted, even if mnimograph.pl is
     stopped by a SIGINT signal.
 
+  -gui
+    Launches the GUI version (mnimograph_gui.pl).
+
 DEPENDENCIES
     -Gnuplot ( >= 4.4 )
+
+    -Imagemagick ( >= 6.6.9-7 )
 
     -Perl ( >= 5.14.2 )
 
     -Chart::Gnuplot ( >= 0.17 )
+
+    -Encode ( >= 2.47 )
+
+    -Gtk2 ( >= 1.245 )
 
     -Term::ReadKey ( >= 2.30 )
 

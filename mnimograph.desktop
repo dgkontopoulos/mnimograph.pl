@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=mnimograph_gui.pl
+Name=mnimograph.pl
+Comment=mnimograph.pl, a tool for memory usage graphing
+Icon=/opt/mnimograph/images/mnimo_logo_text.png
+Categories=GNOME;GTK;System;

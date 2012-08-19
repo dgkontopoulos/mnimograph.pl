@@ -15,7 +15,7 @@ mnimograph.pl is a tool for memory usage graphing.
 It will collect memory usage values every 5 seconds
 until being stopped by typing 'Q' and pressing <Enter>.
 
-Its output is a graph of the values in .eps format.
+Its output is a graph of the values in .png format.
 
 =head1 OPTIONS
 
@@ -23,9 +23,15 @@ Its output is a graph of the values in .eps format.
 
 With this option a graph will be plotted, even if mnimograph.pl is stopped by a SIGINT signal.
 
+=head2 -gui
+
+Launches the GUI version (mnimograph_gui.pl).
+
 =head1 DEPENDENCIES
 
 -Gnuplot ( >= 4.4 )
+
+-Imagemagick ( >= 6.6.9-7 )
 
 -Perl ( >= 5.14.2 )
 
@@ -59,35 +65,61 @@ use warnings;
 use feature qw(say);
 
 use Chart::Gnuplot;
+use File::Spec;
 use Term::ReadKey;
 
-( @ARGV >= 1 && @ARGV <= 2 )
+our $VERSION = 1.0;
+
+( @ARGV >= 1 && @ARGV <= 3 )
   or die "Usage: mnimograph.pl [ options ] output_filename\n";
 
 my $output_file;
 my $always_complete = 0;
+my $argv_length     = @ARGV;
+my $gui             = 0;
 
 if ( @ARGV == 1 )
 {
-    $output_file = $ARGV[0];
-}
-else
-{
-    if ( $ARGV[0] eq '-alc' )
+    if ( $ARGV[0] eq '-gui' )
     {
-        $always_complete = 1;
+        system '/opt/mnimograph/bin/mnimograph_gui.pl&';
+        exit;
     }
     else
     {
-        say "No such flag: $ARGV[0]";
+        $output_file = $ARGV[0];
+    }
+}
+else
+{
+    for ( 0 .. $argv_length - 2 )
+    {
+        if ( $ARGV[$_] eq '-alc' )
+        {
+            $always_complete = 1;
+        }
+        elsif ( $ARGV[$_] eq '-gui' )
+        {
+            $gui = 1;
+        }
+        else
+        {
+            say "No such flag: $ARGV[$_]";
+            die "Usage: mnimograph.pl [ options ] output_filename\n";
+        }
+    }
+    $output_file = $ARGV[ $argv_length - 1 ];
+    if ( $gui == 1 )
+    {
+        $output_file = File::Spec->rel2abs($output_file);
+        system "/opt/mnimograph/bin/mnimograph_gui.pl $output_file&";
         exit;
     }
-    $output_file = $ARGV[1];
 }
 
-if ( $output_file !~ /[.]eps$/ )
+if ( $output_file !~ /[.]png$/ )
 {
-    $output_file .= '.eps';
+    $output_file .= '.png';
 }
 
 open my $fh, '>', $output_file
@@ -156,9 +188,9 @@ sub plot
     my $dataSet = Chart::Gnuplot::DataSet->new(
         xdata  => \@index,
         ydata  => \@values,
-        style  => "linespoints",
-        color  => "#FF0000",
-        plotbg => "#FFFFFF"
+        style  => 'linespoints',
+        color  => '#FF0000',
+        plotbg => '#FFFFFF'
     );
     $chart->plot2d($dataSet);
     say 'Done.';
