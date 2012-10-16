@@ -14,11 +14,24 @@ DESCRIPTION
 
 OPTIONS
   -alc (ALways Complete)
-    With this option a graph will be plotted, even if mnimograph.pl is
-    stopped by a SIGINT signal.
+    A graph will be plotted even if mnimograph.pl is stopped by a SIGINT
+    signal.
+
+  -cached
+    Plots also cached memory. Incompatible with -pidonly.
 
   -gui
     Launches the GUI version (mnimograph_gui.pl).
+
+  -pid=[PID]
+    Plots memory used by PID.
+
+  -pidonly
+    Plots only memory used by PID. Always in combination with -pid=[PID],
+    incompatible with -cached, -swap.
+
+  -swap
+    Plots also swap. Incompatible with -pidonly.
 
 DEPENDENCIES
     -Gnuplot ( >= 4.4 )

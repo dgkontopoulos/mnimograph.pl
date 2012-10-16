@@ -33,7 +33,7 @@ install:
 	rm -f $(DESTDIR)/usr/local/bin/mnimograph_gui.pl
 	ln -s $(INSTALLDIR)/bin/mnimograph.pl $(DESTDIR)/usr/local/bin/mnimograph.pl
 	ln -s $(INSTALLDIR)/bin/mnimograph_gui.pl $(DESTDIR)/usr/local/bin/mnimograph_gui.pl
-	@echo "\nAll done! Launch mnimograph with 'mnimograph.pl' or 'mnimograph_gui.pl'."
+	@echo "\033[1m\nAll done! Launch mnimograph with 'mnimograph.pl' or 'mnimograph_gui.pl'.\033[0m"
 
 uninstall:
 	rm -rf $(INSTALLDIR)/

@@ -46,11 +46,16 @@ use utf8;
 
 our $VERSION = 1.0;
 
+############################################
+#Exit if mnimograph_gui is already running.#
+############################################
+exit if ( `ps aux | grep -v grep | grep mnimograph_gui | wc -l` > 1 );
 $SIG{'INT'} = 'app_quit';
 
 my $window = Gtk2::Window->new('toplevel');
 $window->set_title('mnimograph.pl');
-$window->set_default_icon_from_file('/opt/mnimograph/images/mnimo_logo.png');
+$window->set_default_icon_from_file(
+    '/opt/mnimograph/images/mnimo_logo_text.png');
 $window->signal_connect( destroy => \&app_quit );
 $window->set_position('mouse');
 $window->set_resizable(0);
@@ -108,7 +113,7 @@ my $vseparator1 = Gtk2::VSeparator->new();
 my $file_selection = Gtk2::Label->new('Output File Selection:');
 
 my $name_entry = Gtk2::Entry->new;
-$name_entry->set_width_chars(30);
+$name_entry->set_width_chars(50);
 $name_entry->set_editable(0);
 
 my $name_button = Gtk2::Button->new_with_label('...');
@@ -116,7 +121,6 @@ my $name_button = Gtk2::Button->new_with_label('...');
 my $hbox2        = Gtk2::HBox->new( '0', '5' );
 my $exists_label = Gtk2::Label->new('File exists:');
 my $exists_icon  = Gtk2::Image->new();
-my $vseparator2 = Gtk2::VSeparator->new();
 my $iconsize     = Gtk2::IconSize->register( 'small-toolbar', 50, 50 );
 my $perm_label   = Gtk2::Label->new('Write Permission:');
 my $perm_icon    = Gtk2::Image->new();
@@ -125,9 +129,87 @@ $perm_icon->set_from_stock( 'gtk-no', $iconsize );
 my $perm_counter = 0;
 $hbox2->add($exists_label);
 $hbox2->add($exists_icon);
-$hbox2->add($vseparator2);
 $hbox2->add($perm_label);
 $hbox2->add($perm_icon);
+
+my $hseparator1 = Gtk2::HSeparator->new();
+
+my $hbox3      = Gtk2::HBox->new( '0', '5' );
+my $swap_box   = Gtk2::CheckButton->new('Swap');
+my $cached_box = Gtk2::CheckButton->new('Cached memory');
+
+my $pidseparator = Gtk2::VSeparator->new();
+my $pidlabel     = Gtk2::Label->new('Specific PID:');
+my $pidbox       = Gtk2::Entry->new();
+my $pid_checkbox = Gtk2::CheckButton->new('PID memory only');
+
+my $pidcounter  = 0;
+my $swapcounter = 0;
+$swap_box->signal_connect(
+    toggled => sub {
+        if ( $swapcounter == 0 )
+        {
+            $swapcounter = 1;
+            $pid_checkbox->set_sensitive(0);
+            $pidcounter++;
+        }
+        else
+        {
+            $swapcounter = 0;
+            $pidcounter--;
+            if ( $pidcounter == 0 )
+            {
+                $pid_checkbox->set_sensitive(1);
+            }
+        }
+    }
+);
+
+my $cached_counter = 0;
+$cached_box->signal_connect(
+    toggled => sub {
+        if ( $cached_counter == 0 )
+        {
+            $cached_counter = 1;
+            $pid_checkbox->set_sensitive(0);
+            $pidcounter++;
+        }
+        else
+        {
+            $cached_counter = 0;
+            $pidcounter--;
+            if ( $pidcounter == 0 )
+            {
+                $pid_checkbox->set_sensitive(1);
+            }
+        }
+    }
+);
+
+my $pidbox_counter = 0;
+$pid_checkbox->signal_connect(
+    toggled => sub {
+        if ( $pidbox_counter == 0 )
+        {
+            $pidbox_counter = 1;
+            $swap_box->set_sensitive(0);
+            $cached_box->set_sensitive(0);
+        }
+        else
+        {
+            $pidbox_counter = 0;
+            $swap_box->set_sensitive(1);
+            $cached_box->set_sensitive(1);
+        }
+    }
+);
+
+$hbox3->add($swap_box);
+$hbox3->add($cached_box);
+$hbox3->add($pidseparator);
+$hbox3->add($pidlabel);
+$hbox3->add($pidbox);
+$hbox3->add($pid_checkbox);
 
 my $output_file;
 my $button1 = Gtk2::ToggleButton->new_with_label('Start!');
@@ -163,23 +245,22 @@ if ( defined $ARGV[0] )
         {
             close $fh;
             unlink $output_file;
+            $perm_icon->set_from_stock( 'gtk-yes', $iconsize );
+            $button1->set_sensitive(1);
         }
-        if ( $test_creatable == 1 )
+        elsif ( $test_creatable == 1 )
         {
             $perm_icon->set_from_stock( 'gtk-no', $iconsize );
             $button1->set_sensitive(0);
-        }
-        else
-        {
-            $perm_icon->set_from_stock( 'gtk-yes', $iconsize );
-            $button1->set_sensitive(1);
         }
     }
 }
 
 $name_button->signal_connect( clicked => \&select_file );
 
-my $hbox3 = Gtk2::HBox->new( '0', '20' );
+my $hbox4 = Gtk2::HBox->new( '0', '20' );
+
+my $image = Gtk2::Image->new_from_file('/opt/mnimograph/images/default.png');
 
 $new_button->signal_connect(
     clicked => sub {
@@ -187,6 +268,7 @@ $new_button->signal_connect(
         $button1->set_sensitive(0);
         $exists_icon->set_from_stock( 'gtk-no', $iconsize );
         $perm_icon->set_from_stock( 'gtk-no', $iconsize );
+        $image->set_from_file('/opt/mnimograph/images/default.png');
     }
 );
 
@@ -198,6 +280,9 @@ $hbox1->add($name_button);
 
 $vbox->add($hbox1);
 $vbox->add($hbox2);
+my $hseparator2 = Gtk2::HSeparator->new();
+$vbox->add($hseparator2);
+$vbox->add($hbox3);
 
 unless ( defined $output_file )
 {
@@ -208,24 +293,79 @@ my $pid;
 my $button2 = Gtk2::Button->new_from_stock('gtk-stop');
 $button2->set_sensitive(0);
 
-my $image = Gtk2::Image->new_from_file('/opt/mnimograph/images/default.png');
 my $button_counter = 0;
+###############
+#Start button.#
+###############
 $button1->signal_connect(
     toggled => sub {
         if ( $button_counter == 0 )
         {
-            $button_counter = 1;
-            $button2->set_sensitive(1);
-            $button1->set_sensitive(0);
-            $new_button->set_sensitive(0);
-            $name_button->set_sensitive(0);
-            $image->set_from_file('/opt/mnimograph/images/loading.gif');
-            $pid = fork;
-            if ( !$pid )
+            #######################################################
+            #Error if PID is not defined, while pidonly is active.#
+            #######################################################
+            my $pidonly = $pid_checkbox->get_active;
+            if ( $pidbox->get_text eq q{} && $pidonly == 1 )
             {
-                exec "/usr/local/bin/mnimograph.pl -alc $output_file&";
+                my $dialog =
+                  Gtk2::MessageDialog->new( $window, 'destroy-with-parent',
+                    'error', 'close', "PID was not defined!" );
+                $dialog->signal_connect(
+                    response => sub {
+                        my $self = shift;
+                        $self->destroy;
+                    }
+                );
+                $pid_checkbox->set_active(0);
+                $button1->set_sensitive(1);
+                $dialog->show_all;
             }
-            $pid++;
+            else
+            {
+
+                $button_counter = 1;
+                $button2->set_sensitive(1);
+                $button1->set_sensitive(0);
+                $new_button->set_sensitive(0);
+                $name_button->set_sensitive(0);
+                $swap_box->set_sensitive(0);
+                $cached_box->set_sensitive(0);
+                $pid_checkbox->set_sensitive(0);
+                $image->set_from_file('/opt/mnimograph/images/loading.gif');
+
+                unlink $output_file;
+                my $swap_param   = $swap_box->get_active;
+                my $cached_param = $cached_box->get_active;
+                my $parameters   = q{};
+                if ( $swap_param == 1 )
+                {
+                    $parameters .= ' -swap';
+                }
+                if ( $cached_param == 1 )
+                {
+                    $parameters .= ' -cached';
+                }
+                if ( $pidbox->get_text =~ /(\d+)/ )
+                {
+                    $parameters .= " -pid=$1";
+                }
+                if ( $pidonly == 1 )
+                {
+                    $parameters .= ' -pidonly';
+                }
+                $pid = fork;
+
+                if ( !$pid )
+                {
+                    exec
+"/usr/local/bin/mnimograph.pl -alc $parameters $output_file&";
+                }
+                ######################
+                #Launch mnimograph.pl#
+                ######################
+                $pid =
+`ps aux | grep -v grep | grep -v gui | grep 'mnimograph.pl -alc' | awk ' {print \$2; exit} '`;
+            }
         }
         else
         {
@@ -233,23 +373,27 @@ $button1->signal_connect(
         }
     }
 );
-$hbox3->add($button1);
-
+$hbox4->add($button1);
+##############
+#Stop button.#
+##############
 $button2->signal_connect(
     clicked => sub {
-        kill 2, $pid;
+        do
+        {
+            kill 2, $pid;
+        } while ( `ps aux | grep -v grep | grep $pid` ne q{} );
         $button1->set_sensitive(1);
         $button1->set_active(0);
         $button2->set_sensitive(0);
         $new_button->set_sensitive(1);
         $name_button->set_sensitive(1);
+        $swap_box->set_sensitive(1);
+        $cached_box->set_sensitive(1);
+        $pid_checkbox->set_sensitive(1);
         $exists_icon->set_from_stock( 'gtk-yes', $iconsize );
         sleep 1;
 
-        if ($pid)
-        {
-            kill 1, $pid;
-        }
         if ( -z $output_file )
         {
             $image->set_from_file('/opt/mnimograph/images/error.png');
@@ -257,15 +401,15 @@ $button2->signal_connect(
         else
         {
             my $pixbuf =
-              Gtk2::Gdk::Pixbuf->new_from_file_at_scale( $output_file, 500,
-                500, 1 );
+              Gtk2::Gdk::Pixbuf->new_from_file_at_scale( $output_file, 650,
+                650, 1 );
             $image->set_from_pixbuf($pixbuf);
         }
     }
 );
 
-$hbox3->add($button2);
-$vbox->add($hbox3);
+$hbox4->add($button2);
+$vbox->add($hbox4);
 
 my $separator = Gtk2::HSeparator->new();
 $vbox->add($separator);
@@ -277,6 +421,9 @@ $window->add($vbox);
 $window->show_all;
 Gtk2->main;
 
+####################
+#On program exit...#
+####################
 sub app_quit
 {
     if ( defined $pid )
@@ -287,11 +434,14 @@ sub app_quit
     exit;
 }
 
+#####################
+#The about window...#
+#####################
 sub about
 {
     my $window = Gtk2::Window->new('toplevel');
     $window->set_default_icon_from_file(
-        '/opt/mnimograph/images/mnimo_logo.png');
+        '/opt/mnimograph/images/mnimo_logo_text.png');
     $window->set_title('About mnimograph.pl');
     $window->signal_connect( destroy => sub { Gtk2->main_quit() } );
     $window->set_resizable(0);
@@ -369,6 +519,9 @@ ABOUT
     return 0;
 }
 
+#####################
+#Select output file.#
+#####################
 sub select_file
 {
     my $filter = Gtk2::FileFilter->new();
@@ -423,15 +576,12 @@ sub select_file
             {
                 close $fh;
                 unlink $output_file;
-            }
-            if ( $test_creatable == 1 )
-            {
-                $perm_icon->set_from_stock( 'gtk-no', $iconsize );
-            }
-            else
-            {
                 $perm_icon->set_from_stock( 'gtk-yes', $iconsize );
                 $button1->set_sensitive(1);
+            }
+            elsif ( $test_creatable == 1 )
+            {
+                $perm_icon->set_from_stock( 'gtk-no', $iconsize );
             }
         }
     }
