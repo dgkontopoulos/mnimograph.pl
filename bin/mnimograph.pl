@@ -269,12 +269,13 @@ while (1)
         $counter++;
         sleep 5;
     }
-    ########################
-    #Handle SIGINT signals.#
-    ########################
+    ####################################
+    #Handle SIGINT and SIGTERM signals.#
+    ####################################
     if ( $always_complete == 1 )
     {
-        $SIG{'INT'} = 'signal_handling';
+        $SIG{'INT'}  = 'signal_handling';
+        $SIG{'TERM'} = 'signal_handling';
     }
     my $key;
     do
